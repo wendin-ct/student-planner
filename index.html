@@ -1,0 +1,2077 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学效 - 大学生时间规划助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .logo {
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 16px 12px;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 8px;
+        }
+
+        .nav-section-title {
+            padding: 8px 16px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin: 2px 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .nav-item-icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* 主内容区 */
+        .main {
+            flex: 1;
+            margin-left: 260px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部栏 */
+        .header {
+            height: 70px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 13px;
+        }
+
+        .btn-icon {
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        /* 内容区 */
+        .content {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 统计卡片网格 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-icon.blue { background: rgba(99, 102, 241, 0.2); }
+        .stat-icon.pink { background: rgba(236, 72, 153, 0.2); }
+        .stat-icon.green { background: rgba(34, 197, 94, 0.2); }
+        .stat-icon.orange { background: rgba(245, 158, 11, 0.2); }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .stat-change {
+            font-size: 12px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-change.positive { color: var(--success); }
+        .stat-change.negative { color: var(--danger); }
+
+        /* 卡片 */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        /* 快速添加表单 */
+        .quick-add {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+            border: 1px dashed var(--primary);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .quick-add-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .form-control {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .form-control::placeholder {
+            color: #64748b;
+        }
+
+        select.form-control {
+            cursor: pointer;
+        }
+
+        /* 列表 */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .list-item {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.2s;
+        }
+
+        .list-item:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .list-item.completed {
+            opacity: 0.6;
+        }
+
+        .list-item.completed .list-item-title {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+
+        .list-item-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .list-item-checkbox:hover {
+            border-color: var(--primary);
+        }
+
+        .list-item-checkbox.checked {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .list-item-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .list-item-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .list-item-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            flex-wrap: wrap;
+        }
+
+        .list-item-actions {
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .list-item:hover .list-item-actions {
+            opacity: 1;
+        }
+
+        /* 标签 */
+        .tag {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .tag-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .tag-medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+        }
+
+        .tag-low {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+
+        .tag-course { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
+        .tag-exam { background: rgba(236, 72, 153, 0.2); color: #f9a8d4; }
+        .tag-study { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+        .tag-life { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+
+        /* 课程表 */
+        .timetable {
+            display: grid;
+            grid-template-columns: 60px repeat(7, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .timetable-header {
+            background: var(--bg-card);
+            padding: 16px 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .timetable-time {
+            background: var(--bg-card);
+            padding: 12px 8px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .timetable-cell {
+            background: var(--bg-dark);
+            min-height: 80px;
+            padding: 8px;
+            position: relative;
+        }
+
+        .timetable-cell:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .course-block {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .course-block:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .course-block-title {
+            font-weight: 600;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .course-block-location {
+            opacity: 0.9;
+            font-size: 11px;
+        }
+
+        /* 目标进度 */
+        .goal-item {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .goal-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .goal-category {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .goal-progress {
+            margin-bottom: 12px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .goal-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .goal-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* 专注计时器 */
+        .timer-container {
+            text-align: center;
+            padding: 48px;
+        }
+
+        .timer-modes {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .timer-mode {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg-dark);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .timer-mode:hover {
+            border-color: var(--primary);
+            color: var(--text-primary);
+        }
+
+        .timer-mode.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-color: transparent;
+            color: white;
+        }
+
+        .timer-display {
+            font-size: 96px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 32px 0;
+        }
+
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .timer-btn {
+            padding: 16px 32px;
+            font-size: 16px;
+            border-radius: 12px;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 64px 24px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 0 24px 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* 提示消息 */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            z-index: 1001;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, var(--success) 0%, #16a34a 100%);
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+        }
+
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .timer-display {
+                font-size: 64px;
+            }
+
+            .timetable {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">📚</div>
+                <div class="logo-text">学效</div>
+            </div>
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">概览</div>
+                    <div class="nav-item active" data-section="dashboard">
+                        <span class="nav-item-icon">📊</span>
+                        <span>仪表盘</span>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">管理</div>
+                    <div class="nav-item" data-section="courses">
+                        <span class="nav-item-icon">📖</span>
+                        <span>课程表</span>
+                    </div>
+                    <div class="nav-item" data-section="tasks">
+                        <span class="nav-item-icon">✅</span>
+                        <span>任务清单</span>
+                    </div>
+                    <div class="nav-item" data-section="goals">
+                        <span class="nav-item-icon">🎯</span>
+                        <span>目标追踪</span>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">工具</div>
+                    <div class="nav-item" data-section="focus">
+                        <span class="nav-item-icon">⏱️</span>
+                        <span>专注模式</span>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- 主内容 -->
+        <main class="main">
+            <!-- 顶部栏 -->
+            <header class="header">
+                <div class="header-left">
+                    <h1 class="page-title" id="page-title">仪表盘</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="exportData()">📥 导出数据</button>
+                    <button class="btn btn-secondary btn-sm" onclick="importData()">📤 导入数据</button>
+                    <button class="btn btn-danger btn-sm" onclick="clearAllData()">🗑️ 清空</button>
+                    <button class="btn btn-secondary btn-sm" onclick="logout()">🚪 退出</button>
+                </div>
+            </header>
+
+            <!-- 内容区 -->
+            <div class="content">
+                <!-- 仪表盘 -->
+                <div id="dashboard" class="content-section active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon blue">📖</div>
+                            </div>
+                            <div class="stat-value" id="stat-courses">0</div>
+                            <div class="stat-label">今日课程</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon pink">✅</div>
+                            </div>
+                            <div class="stat-value" id="stat-tasks">0</div>
+                            <div class="stat-label">待办任务</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon green">🎯</div>
+                            </div>
+                            <div class="stat-value" id="stat-goals">0</div>
+                            <div class="stat-label">进行中目标</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon orange">⏱️</div>
+                            </div>
+                            <div class="stat-value" id="stat-focus">0h</div>
+                            <div class="stat-label">今日专注</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">📅 今日课程</div>
+                        </div>
+                        <div class="card-body">
+                            <div id="today-courses-list">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">📖</div>
+                                    <div>暂无今日课程</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">⚡ 紧急任务</div>
+                        </div>
+                        <div class="card-body">
+                            <div id="urgent-tasks-list">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">✅</div>
+                                    <div>暂无紧急任务</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 课程表 -->
+                <div id="courses" class="content-section">
+                    <div class="quick-add">
+                        <div class="quick-add-title">➕ 快速添加课程</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">课程名称</label>
+                                <input type="text" class="form-control" id="quick-course-name" placeholder="例如：高等数学">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">教室</label>
+                                <input type="text" class="form-control" id="quick-course-room" placeholder="例如：A301">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">星期</label>
+                                <select class="form-control" id="quick-course-day">
+                                    <option value="1">周一</option>
+                                    <option value="2">周二</option>
+                                    <option value="3">周三</option>
+                                    <option value="4">周四</option>
+                                    <option value="5">周五</option>
+                                    <option value="6">周六</option>
+                                    <option value="7">周日</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">节次</label>
+                                <select class="form-control" id="quick-course-period">
+                                    <option value="1">第1-2节 (8:00-9:35)</option>
+                                    <option value="2">第3-4节 (9:55-11:30)</option>
+                                    <option value="3">第5-6节 (14:00-15:35)</option>
+                                    <option value="4">第7-8节 (15:55-17:30)</option>
+                                    <option value="5">第9-10节 (19:00-20:35)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="margin-top: 16px; text-align: right;">
+                            <button class="btn btn-primary" onclick="quickAddCourse()">添加课程</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">📖 本周课程表</div>
+                        </div>
+                        <div class="card-body" style="overflow-x: auto;">
+                            <div class="timetable" id="timetable">
+                                <div class="timetable-header">时间</div>
+                                <div class="timetable-header">周一</div>
+                                <div class="timetable-header">周二</div>
+                                <div class="timetable-header">周三</div>
+                                <div class="timetable-header">周四</div>
+                                <div class="timetable-header">周五</div>
+                                <div class="timetable-header">周六</div>
+                                <div class="timetable-header">周日</div>
+                                
+                                <div class="timetable-time">1-2节<br>8:00</div>
+                                <div class="timetable-cell" data-day="1" data-period="1"></div>
+                                <div class="timetable-cell" data-day="2" data-period="1"></div>
+                                <div class="timetable-cell" data-day="3" data-period="1"></div>
+                                <div class="timetable-cell" data-day="4" data-period="1"></div>
+                                <div class="timetable-cell" data-day="5" data-period="1"></div>
+                                <div class="timetable-cell" data-day="6" data-period="1"></div>
+                                <div class="timetable-cell" data-day="7" data-period="1"></div>
+                                
+                                <div class="timetable-time">3-4节<br>9:55</div>
+                                <div class="timetable-cell" data-day="1" data-period="2"></div>
+                                <div class="timetable-cell" data-day="2" data-period="2"></div>
+                                <div class="timetable-cell" data-day="3" data-period="2"></div>
+                                <div class="timetable-cell" data-day="4" data-period="2"></div>
+                                <div class="timetable-cell" data-day="5" data-period="2"></div>
+                                <div class="timetable-cell" data-day="6" data-period="2"></div>
+                                <div class="timetable-cell" data-day="7" data-period="2"></div>
+                                
+                                <div class="timetable-time">5-6节<br>14:00</div>
+                                <div class="timetable-cell" data-day="1" data-period="3"></div>
+                                <div class="timetable-cell" data-day="2" data-period="3"></div>
+                                <div class="timetable-cell" data-day="3" data-period="3"></div>
+                                <div class="timetable-cell" data-day="4" data-period="3"></div>
+                                <div class="timetable-cell" data-day="5" data-period="3"></div>
+                                <div class="timetable-cell" data-day="6" data-period="3"></div>
+                                <div class="timetable-cell" data-day="7" data-period="3"></div>
+                                
+                                <div class="timetable-time">7-8节<br>15:55</div>
+                                <div class="timetable-cell" data-day="1" data-period="4"></div>
+                                <div class="timetable-cell" data-day="2" data-period="4"></div>
+                                <div class="timetable-cell" data-day="3" data-period="4"></div>
+                                <div class="timetable-cell" data-day="4" data-period="4"></div>
+                                <div class="timetable-cell" data-day="5" data-period="4"></div>
+                                <div class="timetable-cell" data-day="6" data-period="4"></div>
+                                <div class="timetable-cell" data-day="7" data-period="4"></div>
+                                
+                                <div class="timetable-time">9-10节<br>19:00</div>
+                                <div class="timetable-cell" data-day="1" data-period="5"></div>
+                                <div class="timetable-cell" data-day="2" data-period="5"></div>
+                                <div class="timetable-cell" data-day="3" data-period="5"></div>
+                                <div class="timetable-cell" data-day="4" data-period="5"></div>
+                                <div class="timetable-cell" data-day="5" data-period="5"></div>
+                                <div class="timetable-cell" data-day="6" data-period="5"></div>
+                                <div class="timetable-cell" data-day="7" data-period="5"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">📋 课程列表</div>
+                        </div>
+                        <div class="card-body">
+                            <div id="courses-list">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">📖</div>
+                                    <div>还没有课程，请在上方快速添加</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 任务清单 -->
+                <div id="tasks" class="content-section">
+                    <div class="quick-add">
+                        <div class="quick-add-title">➕ 快速添加任务</div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 2;">
+                                <label class="form-label">任务名称</label>
+                                <input type="text" class="form-control" id="quick-task-name" placeholder="例如：完成数学作业">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">分类</label>
+                                <select class="form-control" id="quick-task-category">
+                                    <option value="学业">学业</option>
+                                    <option value="考试">考试</option>
+                                    <option value="社团">社团</option>
+                                    <option value="生活">生活</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">优先级</label>
+                                <select class="form-control" id="quick-task-priority">
+                                    <option value="high">高</option>
+                                    <option value="medium" selected>中</option>
+                                    <option value="low">低</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">截止日期</label>
+                                <input type="date" class="form-control" id="quick-task-date">
+                            </div>
+                        </div>
+                        <div style="margin-top: 16px; text-align: right;">
+                            <button class="btn btn-primary" onclick="quickAddTask()">添加任务</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">✅ 任务列表</div>
+                        </div>
+                        <div class="card-body">
+                            <div id="tasks-list">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">✅</div>
+                                    <div>还没有任务，请在上方快速添加</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 目标追踪 -->
+                <div id="goals" class="content-section">
+                    <div class="quick-add">
+                        <div class="quick-add-title">➕ 快速添加目标</div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 2;">
+                                <label class="form-label">目标名称</label>
+                                <input type="text" class="form-control" id="quick-goal-name" placeholder="例如：读完10本书">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">分类</label>
+                                <select class="form-control" id="quick-goal-category">
+                                    <option value="学习">学习</option>
+                                    <option value="健康">健康</option>
+                                    <option value="技能">技能</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">目标值</label>
+                                <input type="number" class="form-control" id="quick-goal-target" placeholder="10" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">单位</label>
+                                <input type="text" class="form-control" id="quick-goal-unit" placeholder="本">
+                            </div>
+                        </div>
+                        <div style="margin-top: 16px; text-align: right;">
+                            <button class="btn btn-primary" onclick="quickAddGoal()">添加目标</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">🎯 我的目标</div>
+                        </div>
+                        <div class="card-body">
+                            <div id="goals-list">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">🎯</div>
+                                    <div>还没有目标，请在上方快速添加</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 专注模式 -->
+                <div id="focus" class="content-section">
+                    <div class="card">
+                        <div class="timer-container">
+                            <div class="timer-modes">
+                                <div class="timer-mode active" data-time="25">专注 25分钟</div>
+                                <div class="timer-mode" data-time="5">休息 5分钟</div>
+                                <div class="timer-mode" data-time="15">长休息 15分钟</div>
+                            </div>
+                            <div class="timer-display" id="timer">25:00</div>
+                            <div class="timer-controls">
+                                <button class="btn btn-primary timer-btn" id="start-btn" onclick="startTimer()">▶️ 开始</button>
+                                <button class="btn btn-secondary timer-btn" id="pause-btn" onclick="pauseTimer()" style="display: none;">⏸️ 暂停</button>
+                                <button class="btn btn-secondary timer-btn" onclick="resetTimer()">🔄 重置</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">📈 专注统计</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="stats-grid" style="margin-bottom: 0;">
+                                <div class="stat-card" style="margin-bottom: 0;">
+                                    <div class="stat-value" id="total-focus-sessions">0</div>
+                                    <div class="stat-label">专注次数</div>
+                                </div>
+                                <div class="stat-card" style="margin-bottom: 0;">
+                                    <div class="stat-value" id="total-focus-minutes">0</div>
+                                    <div class="stat-label">总专注时长(分钟)</div>
+                                </div>
+                                <div class="stat-card" style="margin-bottom: 0;">
+                                    <div class="stat-value" id="today-focus-minutes">0</div>
+                                    <div class="stat-label">今日专注(分钟)</div>
+                                </div>
+                                <div class="stat-card" style="margin-bottom: 0;">
+                                    <div class="stat-value" id="current-streak">0</div>
+                                    <div class="stat-label">连续天数</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 编辑课程模态框 -->
+    <div class="modal" id="course-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">编辑课程</div>
+                <button class="modal-close" onclick="closeModal('course-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-course-id">
+                <div class="form-group">
+                    <label class="form-label">课程名称</label>
+                    <input type="text" class="form-control" id="edit-course-name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">教室</label>
+                    <input type="text" class="form-control" id="edit-course-room">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">星期</label>
+                        <select class="form-control" id="edit-course-day">
+                            <option value="1">周一</option>
+                            <option value="2">周二</option>
+                            <option value="3">周三</option>
+                            <option value="4">周四</option>
+                            <option value="5">周五</option>
+                            <option value="6">周六</option>
+                            <option value="7">周日</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">节次</label>
+                        <select class="form-control" id="edit-course-period">
+                            <option value="1">第1-2节</option>
+                            <option value="2">第3-4节</option>
+                            <option value="3">第5-6节</option>
+                            <option value="4">第7-8节</option>
+                            <option value="5">第9-10节</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('course-modal')">取消</button>
+                <button class="btn btn-primary" onclick="saveEditCourse()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑任务模态框 -->
+    <div class="modal" id="task-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">编辑任务</div>
+                <button class="modal-close" onclick="closeModal('task-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-task-id">
+                <div class="form-group">
+                    <label class="form-label">任务名称</label>
+                    <input type="text" class="form-control" id="edit-task-name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">任务描述</label>
+                    <textarea class="form-control" id="edit-task-desc" rows="2"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">分类</label>
+                        <select class="form-control" id="edit-task-category">
+                            <option value="学业">学业</option>
+                            <option value="考试">考试</option>
+                            <option value="社团">社团</option>
+                            <option value="生活">生活</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">优先级</label>
+                        <select class="form-control" id="edit-task-priority">
+                            <option value="high">高</option>
+                            <option value="medium">中</option>
+                            <option value="low">低</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">截止日期</label>
+                    <input type="date" class="form-control" id="edit-task-date">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('task-modal')">取消</button>
+                <button class="btn btn-primary" onclick="saveEditTask()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑目标模态框 -->
+    <div class="modal" id="goal-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">编辑目标</div>
+                <button class="modal-close" onclick="closeModal('goal-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-goal-id">
+                <div class="form-group">
+                    <label class="form-label">目标名称</label>
+                    <input type="text" class="form-control" id="edit-goal-name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">分类</label>
+                    <select class="form-control" id="edit-goal-category">
+                        <option value="学习">学习</option>
+                        <option value="健康">健康</option>
+                        <option value="技能">技能</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">目标值</label>
+                        <input type="number" class="form-control" id="edit-goal-target" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">当前进度</label>
+                        <input type="number" class="form-control" id="edit-goal-current" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">单位</label>
+                        <input type="text" class="form-control" id="edit-goal-unit">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('goal-modal')">取消</button>
+                <button class="btn btn-primary" onclick="saveEditGoal()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ==================== 数据存储 ====================
+        let data = {
+            courses: [],
+            tasks: [],
+            goals: [],
+            focusTime: 0,
+            focusSessions: 0,
+            lastFocusDate: null
+        };
+
+        const periodTimes = {
+            1: { start: '08:00', end: '09:35' },
+            2: { start: '09:55', end: '11:30' },
+            3: { start: '14:00', end: '15:35' },
+            4: { start: '15:55', end: '17:30' },
+            5: { start: '19:00', end: '20:35' }
+        };
+
+        // 初始化
+        function init() {
+            loadData();
+            initNavigation();
+            initTimer();
+            setDefaultDate();
+            updateAll();
+        }
+
+        function setDefaultDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('quick-task-date').value = today;
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('studyPlannerData');
+            if (saved) {
+                data = JSON.parse(saved);
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('studyPlannerData', JSON.stringify(data));
+        }
+
+        // ==================== 导航 ====================
+        function initNavigation() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const section = item.dataset.section;
+                    switchSection(section);
+                    
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                });
+            });
+        }
+
+        function switchSection(section) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(section).classList.add('active');
+            
+            const titles = {
+                dashboard: '仪表盘',
+                courses: '课程表',
+                tasks: '任务清单',
+                goals: '目标追踪',
+                focus: '专注模式'
+            };
+            document.getElementById('page-title').textContent = titles[section];
+            
+            updateAll();
+        }
+
+        // ==================== 课程管理 ====================
+        function quickAddCourse() {
+            const name = document.getElementById('quick-course-name').value.trim();
+            const room = document.getElementById('quick-course-room').value.trim();
+            const day = parseInt(document.getElementById('quick-course-day').value);
+            const period = parseInt(document.getElementById('quick-course-period').value);
+
+            if (!name) {
+                showToast('请输入课程名称', 'error');
+                return;
+            }
+
+            const course = {
+                id: Date.now(),
+                name,
+                room,
+                day,
+                period,
+                time: periodTimes[period]
+            };
+
+            data.courses.push(course);
+            saveData();
+            updateAll();
+            
+            // 清空表单
+            document.getElementById('quick-course-name').value = '';
+            document.getElementById('quick-course-room').value = '';
+            
+            showToast('课程添加成功');
+        }
+
+        function deleteCourse(id) {
+            if (confirm('确定删除这门课程？')) {
+                data.courses = data.courses.filter(c => c.id !== id);
+                saveData();
+                updateAll();
+                showToast('课程已删除');
+            }
+        }
+
+        function openEditCourse(course) {
+            document.getElementById('edit-course-id').value = course.id;
+            document.getElementById('edit-course-name').value = course.name;
+            document.getElementById('edit-course-room').value = course.room || '';
+            document.getElementById('edit-course-day').value = course.day;
+            document.getElementById('edit-course-period').value = course.period;
+            openModal('course-modal');
+        }
+
+        function saveEditCourse() {
+            const id = parseInt(document.getElementById('edit-course-id').value);
+            const name = document.getElementById('edit-course-name').value.trim();
+            const room = document.getElementById('edit-course-room').value.trim();
+            const day = parseInt(document.getElementById('edit-course-day').value);
+            const period = parseInt(document.getElementById('edit-course-period').value);
+
+            if (!name) {
+                showToast('请输入课程名称', 'error');
+                return;
+            }
+
+            const index = data.courses.findIndex(c => c.id === id);
+            if (index !== -1) {
+                data.courses[index] = { ...data.courses[index], name, room, day, period, time: periodTimes[period] };
+                saveData();
+                updateAll();
+                closeModal('course-modal');
+                showToast('课程已更新');
+            }
+        }
+
+        function renderCourses() {
+            const listContainer = document.getElementById('courses-list');
+            
+            if (data.courses.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📖</div>
+                        <div>还没有课程，请在上方快速添加</div>
+                    </div>`;
+            } else {
+                const sortedCourses = [...data.courses].sort((a, b) => {
+                    if (a.day !== b.day) return a.day - b.day;
+                    return a.period - b.period;
+                });
+
+                listContainer.innerHTML = sortedCourses.map(course => `
+                    <div class="list-item">
+                        <div class="list-item-content">
+                            <div class="list-item-title">${course.name}</div>
+                            <div class="list-item-meta">
+                                <span>周${['一', '二', '三', '四', '五', '六', '日'][course.day - 1]} 第${course.period}-${course.period + 1}节</span>
+                                <span>${course.time.start}-${course.time.end}</span>
+                                ${course.room ? `<span>📍 ${course.room}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="list-item-actions">
+                            <button class="btn btn-sm btn-secondary" onclick='openEditCourse(${JSON.stringify(course)})'>编辑</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteCourse(${course.id})">删除</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // 渲染课程表
+            renderTimetable();
+        }
+
+        function renderTimetable() {
+            // 清空所有单元格
+            document.querySelectorAll('.timetable-cell').forEach(cell => {
+                cell.innerHTML = '';
+            });
+
+            // 填充课程
+            data.courses.forEach(course => {
+                const cell = document.querySelector(`.timetable-cell[data-day="${course.day}"][data-period="${course.period}"]`);
+                if (cell) {
+                    cell.innerHTML = `
+                        <div class="course-block" onclick='openEditCourse(${JSON.stringify(course)})'>
+                            <div class="course-block-title">${course.name}</div>
+                            ${course.room ? `<div class="course-block-location">📍 ${course.room}</div>` : ''}
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        // ==================== 任务管理 ====================
+        function quickAddTask() {
+            const name = document.getElementById('quick-task-name').value.trim();
+            const category = document.getElementById('quick-task-category').value;
+            const priority = document.getElementById('quick-task-priority').value;
+            const date = document.getElementById('quick-task-date').value;
+
+            if (!name) {
+                showToast('请输入任务名称', 'error');
+                return;
+            }
+
+            const task = {
+                id: Date.now(),
+                name,
+                category,
+                priority,
+                date: date || new Date().toISOString().split('T')[0],
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+
+            data.tasks.push(task);
+            saveData();
+            updateAll();
+            
+            document.getElementById('quick-task-name').value = '';
+            showToast('任务添加成功');
+        }
+
+        function toggleTask(id) {
+            const task = data.tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                saveData();
+                updateAll();
+            }
+        }
+
+        function deleteTask(id) {
+            if (confirm('确定删除这个任务？')) {
+                data.tasks = data.tasks.filter(t => t.id !== id);
+                saveData();
+                updateAll();
+                showToast('任务已删除');
+            }
+        }
+
+        function openEditTask(task) {
+            document.getElementById('edit-task-id').value = task.id;
+            document.getElementById('edit-task-name').value = task.name;
+            document.getElementById('edit-task-desc').value = task.desc || '';
+            document.getElementById('edit-task-category').value = task.category;
+            document.getElementById('edit-task-priority').value = task.priority;
+            document.getElementById('edit-task-date').value = task.date;
+            openModal('task-modal');
+        }
+
+        function saveEditTask() {
+            const id = parseInt(document.getElementById('edit-task-id').value);
+            const name = document.getElementById('edit-task-name').value.trim();
+            const desc = document.getElementById('edit-task-desc').value.trim();
+            const category = document.getElementById('edit-task-category').value;
+            const priority = document.getElementById('edit-task-priority').value;
+            const date = document.getElementById('edit-task-date').value;
+
+            if (!name) {
+                showToast('请输入任务名称', 'error');
+                return;
+            }
+
+            const index = data.tasks.findIndex(t => t.id === id);
+            if (index !== -1) {
+                data.tasks[index] = { ...data.tasks[index], name, desc, category, priority, date };
+                saveData();
+                updateAll();
+                closeModal('task-modal');
+                showToast('任务已更新');
+            }
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('tasks-list');
+            
+            if (data.tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✅</div>
+                        <div>还没有任务，请在上方快速添加</div>
+                    </div>`;
+                return;
+            }
+
+            // 排序：未完成的在前，按优先级排序
+            const sortedTasks = [...data.tasks].sort((a, b) => {
+                if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                const priorityOrder = { high: 0, medium: 1, low: 2 };
+                return priorityOrder[a.priority] - priorityOrder[b.priority];
+            });
+
+            container.innerHTML = sortedTasks.map(task => `
+                <div class="list-item ${task.completed ? 'completed' : ''}">
+                    <div class="list-item-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})">
+                        ${task.completed ? '✓' : ''}
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-title">${task.name}</div>
+                        <div class="list-item-meta">
+                            <span class="tag tag-${task.priority}">${task.priority === 'high' ? '高' : task.priority === 'medium' ? '中' : '低'}优先级</span>
+                            <span class="tag tag-${task.category === '学业' ? 'course' : task.category === '考试' ? 'exam' : task.category === '社团' ? 'life' : 'study'}">${task.category}</span>
+                            <span>📅 ${task.date}</span>
+                        </div>
+                    </div>
+                    <div class="list-item-actions">
+                        <button class="btn btn-sm btn-secondary" onclick='openEditTask(${JSON.stringify(task)})'>编辑</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==================== 目标管理 ====================
+        function quickAddGoal() {
+            const name = document.getElementById('quick-goal-name').value.trim();
+            const category = document.getElementById('quick-goal-category').value;
+            const target = parseInt(document.getElementById('quick-goal-target').value) || 0;
+            const unit = document.getElementById('quick-goal-unit').value.trim();
+
+            if (!name) {
+                showToast('请输入目标名称', 'error');
+                return;
+            }
+
+            if (target <= 0) {
+                showToast('请输入有效的目标值', 'error');
+                return;
+            }
+
+            const goal = {
+                id: Date.now(),
+                name,
+                category,
+                target,
+                current: 0,
+                unit,
+                createdAt: new Date().toISOString()
+            };
+
+            data.goals.push(goal);
+            saveData();
+            updateAll();
+            
+            document.getElementById('quick-goal-name').value = '';
+            document.getElementById('quick-goal-target').value = '';
+            document.getElementById('quick-goal-unit').value = '';
+            showToast('目标添加成功');
+        }
+
+        function updateGoalProgress(id, amount) {
+            const goal = data.goals.find(g => g.id === id);
+            if (goal) {
+                goal.current = Math.max(0, Math.min(goal.current + amount, goal.target));
+                saveData();
+                updateAll();
+            }
+        }
+
+        function deleteGoal(id) {
+            if (confirm('确定删除这个目标？')) {
+                data.goals = data.goals.filter(g => g.id !== id);
+                saveData();
+                updateAll();
+                showToast('目标已删除');
+            }
+        }
+
+        function openEditGoal(goal) {
+            document.getElementById('edit-goal-id').value = goal.id;
+            document.getElementById('edit-goal-name').value = goal.name;
+            document.getElementById('edit-goal-category').value = goal.category;
+            document.getElementById('edit-goal-target').value = goal.target;
+            document.getElementById('edit-goal-current').value = goal.current;
+            document.getElementById('edit-goal-unit').value = goal.unit || '';
+            openModal('goal-modal');
+        }
+
+        function saveEditGoal() {
+            const id = parseInt(document.getElementById('edit-goal-id').value);
+            const name = document.getElementById('edit-goal-name').value.trim();
+            const category = document.getElementById('edit-goal-category').value;
+            const target = parseInt(document.getElementById('edit-goal-target').value) || 0;
+            const current = parseInt(document.getElementById('edit-goal-current').value) || 0;
+            const unit = document.getElementById('edit-goal-unit').value.trim();
+
+            if (!name) {
+                showToast('请输入目标名称', 'error');
+                return;
+            }
+
+            const index = data.goals.findIndex(g => g.id === id);
+            if (index !== -1) {
+                data.goals[index] = { ...data.goals[index], name, category, target, current, unit };
+                saveData();
+                updateAll();
+                closeModal('goal-modal');
+                showToast('目标已更新');
+            }
+        }
+
+        function renderGoals() {
+            const container = document.getElementById('goals-list');
+            
+            if (data.goals.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎯</div>
+                        <div>还没有目标，请在上方快速添加</div>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = data.goals.map(goal => {
+                const progress = goal.target > 0 ? Math.round((goal.current / goal.target) * 100) : 0;
+                const isCompleted = progress >= 100;
+
+                return `
+                    <div class="goal-item">
+                        <div class="goal-header">
+                            <div>
+                                <div class="goal-title">${goal.name} ${isCompleted ? '✅' : ''}</div>
+                                <div class="goal-category">${goal.category}</div>
+                            </div>
+                            <div class="goal-actions">
+                                <button class="btn btn-sm btn-success" onclick="updateGoalProgress(${goal.id}, 1)">+1</button>
+                                <button class="btn btn-sm btn-secondary" onclick='openEditGoal(${JSON.stringify(goal)})'>编辑</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteGoal(${goal.id})">删除</button>
+                            </div>
+                        </div>
+                        <div class="goal-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                        <div class="goal-stats">
+                            <span>${goal.current} / ${goal.target} ${goal.unit || ''}</span>
+                            <span>${progress}% 完成</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==================== 专注模式 ====================
+        let timerInterval = null;
+        let timeLeft = 25 * 60;
+        let isRunning = false;
+
+        function initTimer() {
+            document.querySelectorAll('.timer-mode').forEach(mode => {
+                mode.addEventListener('click', () => {
+                    if (isRunning) return;
+                    document.querySelectorAll('.timer-mode').forEach(m => m.classList.remove('active'));
+                    mode.classList.add('active');
+                    timeLeft = parseInt(mode.dataset.time) * 60;
+                    updateTimerDisplay();
+                });
+            });
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const seconds = (timeLeft % 60).toString().padStart(2, '0');
+            document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+        }
+
+        function startTimer() {
+            if (isRunning) return;
+            isRunning = true;
+            document.getElementById('start-btn').style.display = 'none';
+            document.getElementById('pause-btn').style.display = 'inline-flex';
+
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    pauseTimer();
+                    const activeMode = document.querySelector('.timer-mode.active');
+                    const minutes = parseInt(activeMode.dataset.time);
+                    if (minutes >= 25) {
+                        data.focusTime += minutes;
+                        data.focusSessions++;
+                        data.lastFocusDate = new Date().toISOString().split('T')[0];
+                        saveData();
+                        updateStats();
+                    }
+                    showToast('专注时间结束！休息一下吧');
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            isRunning = false;
+            clearInterval(timerInterval);
+            document.getElementById('start-btn').style.display = 'inline-flex';
+            document.getElementById('pause-btn').style.display = 'none';
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            const activeMode = document.querySelector('.timer-mode.active');
+            timeLeft = parseInt(activeMode.dataset.time) * 60;
+            updateTimerDisplay();
+        }
+
+        // ==================== 仪表盘 ====================
+        function updateStats() {
+            const today = new Date().getDay() || 7;
+            const todayCourses = data.courses.filter(c => c.day === today);
+            const pendingTasks = data.tasks.filter(t => !t.completed);
+            const activeGoals = data.goals.filter(g => g.current < g.target);
+            const focusHours = Math.floor(data.focusTime / 60);
+
+            document.getElementById('stat-courses').textContent = todayCourses.length;
+            document.getElementById('stat-tasks').textContent = pendingTasks.length;
+            document.getElementById('stat-goals').textContent = activeGoals.length;
+            document.getElementById('stat-focus').textContent = focusHours + 'h';
+
+            // 今日课程
+            const coursesContainer = document.getElementById('today-courses-list');
+            if (todayCourses.length === 0) {
+                coursesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📖</div>
+                        <div>今日暂无课程</div>
+                    </div>`;
+            } else {
+                const sortedTodayCourses = todayCourses.sort((a, b) => a.period - b.period);
+                coursesContainer.innerHTML = sortedTodayCourses.map(course => `
+                    <div class="list-item">
+                        <div class="list-item-content">
+                            <div class="list-item-title">${course.name}</div>
+                            <div class="list-item-meta">
+                                <span>第${course.period}-${course.period + 1}节</span>
+                                <span>${course.time.start}-${course.time.end}</span>
+                                ${course.room ? `<span>📍 ${course.room}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // 紧急任务
+            const urgentTasks = pendingTasks.filter(t => t.priority === 'high');
+            const tasksContainer = document.getElementById('urgent-tasks-list');
+            if (urgentTasks.length === 0) {
+                tasksContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✅</div>
+                        <div>暂无紧急任务</div>
+                    </div>`;
+            } else {
+                tasksContainer.innerHTML = urgentTasks.slice(0, 5).map(task => `
+                    <div class="list-item">
+                        <div class="list-item-content">
+                            <div class="list-item-title">${task.name}</div>
+                            <div class="list-item-meta">
+                                <span class="tag tag-high">高优先级</span>
+                                <span>📅 ${task.date}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // 专注统计
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todayFocusMinutes = data.lastFocusDate === todayStr ? data.focusTime % (24 * 60) : 0;
+            
+            document.getElementById('total-focus-sessions').textContent = data.focusSessions || 0;
+            document.getElementById('total-focus-minutes').textContent = data.focusTime || 0;
+            document.getElementById('today-focus-minutes').textContent = todayFocusMinutes;
+            document.getElementById('current-streak').textContent = calculateStreak();
+        }
+
+        function calculateStreak() {
+            if (!data.lastFocusDate) return 0;
+            
+            const today = new Date();
+            const lastDate = new Date(data.lastFocusDate);
+            const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) return 1;
+            if (diffDays === 1) return 2;
+            return 0;
+        }
+
+        function updateAll() {
+            renderCourses();
+            renderTasks();
+            renderGoals();
+            updateStats();
+            updateTimerDisplay();
+        }
+
+        // ==================== 工具函数 ====================
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `study-planner-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('数据已导出');
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+                        if (confirm('导入数据将覆盖现有数据，是否继续？')) {
+                            data = { ...data, ...imported };
+                            saveData();
+                            updateAll();
+                            showToast('数据导入成功');
+                        }
+                    } catch (err) {
+                        showToast('数据格式错误', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function clearAllData() {
+            if (confirm('确定要清空所有数据吗？此操作不可恢复！')) {
+                data = { courses: [], tasks: [], goals: [], focusTime: 0, focusSessions: 0, lastFocusDate: null };
+                saveData();
+                updateAll();
+                showToast('所有数据已清空');
+            }
+        }
+
+        // 点击模态框外部关闭
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
+        // 退出登录
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('studyPlanner_token');
+                localStorage.removeItem('studyPlanner_user');
+                window.location.href = '登录.html';
+            }
+        }
+
+        // 检查登录状态
+        function checkAuth() {
+            const token = localStorage.getItem('studyPlanner_token');
+            if (!token) {
+                window.location.href = '登录.html';
+                return false;
+            }
+            return true;
+        }
+
+        // 页面加载时检查登录状态
+        if (!checkAuth()) {
+            // 未登录，跳转到登录页
+        }
+
+        // 启动应用
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 学效</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        
+        body {
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .register-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .logo {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #4e6ef2;
+            margin-bottom: 24px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #434343;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #4e6ef2;
+            box-shadow: 0 0 0 2px rgba(78, 110, 242, 0.2);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: #4e6ef2;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #5a73e9;
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 14px;
+            color: #8c8c8c;
+        }
+        
+        .login-link a {
+            color: #4e6ef2;
+            text-decoration: none;
+        }
+        
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background-color: #434343;
+            color: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo">学效 - 大学生时间规划</div>
+        
+        <form id="registerForm">
+            <div class="form-group">
+                <label class="form-label">用户名</label>
+                <input type="text" class="form-control" id="username" placeholder="请输入用户名" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">邮箱</label>
+                <input type="email" class="form-control" id="email" placeholder="请输入邮箱" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">密码</label>
+                <input type="password" class="form-control" id="password" placeholder="请输入密码（至少6位）" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">确认密码</label>
+                <input type="password" class="form-control" id="confirmPassword" placeholder="请确认密码" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">手机号（选填）</label>
+                <input type="tel" class="form-control" id="phone" placeholder="请输入手机号">
+            </div>
+            
+            <button type="submit" class="btn btn-primary">注册</button>
+        </form>
+        
+        <div class="login-link">
+            已有账号？<a href="登录.html">立即登录</a>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+        import { localUserApi, showToast, redirectIfLoggedIn } from './api.js';
+        
+        // 如果已登录，跳转到主页
+        redirectIfLoggedIn();
+        
+        // 注册表单提交
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // 获取表单数据
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const phone = document.getElementById('phone').value.trim() || null;
+            
+            // 验证
+            if (!username || !email || !password) {
+                showToast('请填写所有必填项', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showToast('两次输入的密码不一致', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showToast('密码长度不能少于6位', 'error');
+                return;
+            }
+            
+            // 邮箱格式验证
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showToast('请输入正确的邮箱格式', 'error');
+                return;
+            }
+            
+            try {
+                // 调用本地注册接口
+                localUserApi.register({
+                    username,
+                    email,
+                    password,
+                    phone
+                });
+                
+                showToast('注册成功，即将跳转到登录页', 'success');
+                setTimeout(() => {
+                    window.location.href = '登录.html';
+                }, 2000);
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        });
+    </script>
+</body>
+</html>
