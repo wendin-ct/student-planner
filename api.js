@@ -505,7 +505,7 @@ const focusApi = {
  */
 function requireAuth() {
     if (!authApi.isLoggedIn()) {
-        window.location.href = '登录.html';
+        window.location.href = 'login.html';
         return false;
     }
     return true;

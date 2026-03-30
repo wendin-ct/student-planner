@@ -2051,7 +2051,7 @@
             if (confirm('确定要退出登录吗？')) {
                 localStorage.removeItem('studyPlanner_token');
                 localStorage.removeItem('studyPlanner_user');
-                window.location.href = '登录.html';
+                window.location.href = 'login.html';
             }
         }
 
@@ -2059,7 +2059,7 @@
         function checkAuth() {
             const token = localStorage.getItem('studyPlanner_token');
             if (!token) {
-                window.location.href = '登录.html';
+                window.location.href = 'login.html';
                 return false;
             }
             return true;
